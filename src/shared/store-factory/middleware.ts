@@ -41,11 +41,12 @@ export const devtools = <T>(
 
   const { name = 'Store', enabled = isDev, anonymousActionType = 'action', trace = false } = opts;
 
-  // eslint-disable-next-line no-underscore-dangle
+  /* eslint-disable no-underscore-dangle */
   const ext =
     typeof window !== 'undefined' &&
     (window as unknown as { __REDUX_DEVTOOLS_EXTENSION__?: ReduxDevtoolsExtension })
       .__REDUX_DEVTOOLS_EXTENSION__;
+  /* eslint-enable no-underscore-dangle */
 
   if (!enabled || !ext) return config;
 

@@ -58,6 +58,12 @@ export const useAuthStore = createImmerStore({
       this.set({ error, isLoading: false });
     },
 
+    removeAll() {
+      this.set({
+        isLoading: false,
+      });
+    },
+
     clearError() {
       this.set({ error: null });
     },
@@ -101,5 +107,3 @@ export const getAuthToken = () => useAuthStore.getState().token;
 export const getCurrentUser = () => useAuthStore.getState().user;
 export const isAuthenticated = () => useAuthStore.getState().isAuthenticated;
 export const getAuthState = () => useAuthStore.getState();
-export const setAuthToken = (token: string) => useAuthStore.getState().setToken(token);
-export const userSignOut = () => useAuthStore.getState().logout();

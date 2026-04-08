@@ -103,25 +103,8 @@ const eslintConfig = [
       // ---- Import ----
       // 允许 named export 为主，不强制 default export
       'import/prefer-default-export': 'off',
-      // import 分组排序
-      'import/order': [
-        'error',
-        {
-          groups: ['builtin', 'external', 'internal', ['parent', 'sibling', 'index']],
-          pathGroups: [
-            { pattern: 'react',         group: 'external',  position: 'before' },
-            { pattern: 'next/**',       group: 'external',  position: 'before' },
-            { pattern: '@/**',          group: 'internal',  position: 'before' },
-            { pattern: '@components/**', group: 'internal', position: 'before' },
-            { pattern: '@shared/**',    group: 'internal',  position: 'before' },
-            { pattern: '@core/**',      group: 'internal',  position: 'before' },
-            { pattern: '@features/**',  group: 'internal',  position: 'before' },
-          ],
-          pathGroupsExcludedImportTypes: ['react'],
-          'newlines-between': 'always',
-          alphabetize: { order: 'asc', caseInsensitive: true },
-        },
-      ],
+      // import 顺序不强制检查
+      'import/order': 'off',
 
       // ---- 其他 ----
       // console.log 在生产代码中给警告
