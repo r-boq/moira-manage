@@ -1,5 +1,6 @@
-import { StoreApi, UseBoundStore } from 'zustand'
-import type { ZustandGet, ZustandSet } from './types'
+import { type StoreApi, type UseBoundStore } from 'zustand';
+
+import type { ZustandGet, ZustandSet } from './types';
 
 // ============================================================================
 // Action Helpers
@@ -8,18 +9,20 @@ import type { ZustandGet, ZustandSet } from './types'
 /**
  * Bind actions to set/get context (used internally by createImmerStore)
  */
-export function createActions<TState, TActions extends Record<string, Function>>(
-  actions: TActions,
-  set: ZustandSet<TState>,
-  get: ZustandGet<TState>
-): TActions {
-  const boundActions = {} as TActions
-  for (const key in actions) {
+export function createActions<
+  TState,
+  TActions extends Record<string, (...args: unknown[]) => unknown>,
+>(actions: TActions, set: ZustandSet<TState>, get: ZustandGet<TState>): TActions {
+  const boundActions = {} as TActions;
+  Object.keys(actions).forEach((key) => {
     if (typeof actions[key] === 'function') {
-      boundActions[key] = actions[key].bind({ set, get }) as TActions[typeof key]
+      boundActions[key as keyof TActions] = actions[key].bind({
+        set,
+        get,
+      }) as TActions[keyof TActions];
     }
-  }
-  return boundActions
+  });
+  return boundActions;
 }
 
 // ============================================================================
@@ -33,17 +36,15 @@ export function createActions<TState, TActions extends Record<string, Function>>
  * const selectors = createSelectors(useAuthStore)
  * const user = selectors.user()   // instead of useAuthStore(s => s.user)
  */
-export function createSelectors<TState extends object>(
-  store: UseBoundStore<StoreApi<TState>>
-) {
-  type Selectors = { [K in keyof TState]: () => TState[K] }
-  const selectors = {} as Selectors
+export function createSelectors<TState extends object>(store: UseBoundStore<StoreApi<TState>>) {
+  type Selectors = { [K in keyof TState]: () => TState[K] };
+  const selectors = {} as Selectors;
 
-  for (const key of Object.keys(store.getState()) as Array<keyof TState>) {
-    selectors[key] = () => store((state) => state[key])
-  }
+  (Object.keys(store.getState()) as Array<keyof TState>).forEach((key) => {
+    selectors[key] = () => store((state) => state[key]);
+  });
 
-  return selectors
+  return selectors;
 }
 
 /**
@@ -51,9 +52,9 @@ export function createSelectors<TState extends object>(
  */
 export function createSelector<TState, TResult>(
   store: UseBoundStore<StoreApi<TState>>,
-  selector: (state: TState) => TResult
+  selector: (state: TState) => TResult,
 ): () => TResult {
-  return () => store(selector)
+  return () => store(selector);
 }
 
 // ============================================================================
@@ -65,9 +66,9 @@ export function createSelector<TState, TResult>(
  */
 export function createResetFunction<TState extends object>(
   store: UseBoundStore<StoreApi<TState>>,
-  initialState: TState
+  initialState: TState,
 ): () => void {
-  return () => store.setState(initialState, true)
+  return () => store.setState(initialState, true);
 }
 
 // ============================================================================
@@ -79,16 +80,16 @@ export function createResetFunction<TState extends object>(
  */
 export function createComputed<TState, TComputed extends Record<string, unknown>>(
   store: UseBoundStore<StoreApi<TState>>,
-  computedFns: { [K in keyof TComputed]: (state: TState) => TComputed[K] }
+  computedFns: { [K in keyof TComputed]: (state: TState) => TComputed[K] },
 ): () => TComputed {
   return () => {
-    const state = store.getState()
-    const computed = {} as TComputed
-    for (const key in computedFns) {
-      computed[key] = computedFns[key](state)
-    }
-    return computed
-  }
+    const state = store.getState();
+    const computed = {} as TComputed;
+    Object.keys(computedFns).forEach((key) => {
+      computed[key as keyof TComputed] = computedFns[key as keyof TComputed](state);
+    });
+    return computed;
+  };
 }
 
 // ============================================================================
@@ -101,17 +102,17 @@ export function createComputed<TState, TComputed extends Record<string, unknown>
 export function subscribeToKey<TState extends object, K extends keyof TState>(
   store: UseBoundStore<StoreApi<TState>>,
   key: K,
-  callback: (value: TState[K], previousValue: TState[K]) => void
+  callback: (value: TState[K], previousValue: TState[K]) => void,
 ): () => void {
-  let previousValue = store.getState()[key]
+  let previousValue = store.getState()[key];
 
   return store.subscribe((state) => {
-    const currentValue = state[key]
+    const currentValue = state[key];
     if (currentValue !== previousValue) {
-      callback(currentValue, previousValue)
-      previousValue = currentValue
+      callback(currentValue, previousValue);
+      previousValue = currentValue;
     }
-  })
+  });
 }
 
 /**
@@ -121,17 +122,17 @@ export function subscribeWithSelector<TState, TSelected>(
   store: UseBoundStore<StoreApi<TState>>,
   selector: (state: TState) => TSelected,
   callback: (value: TSelected, previousValue: TSelected) => void,
-  equalityFn: (a: TSelected, b: TSelected) => boolean = Object.is
+  equalityFn: (a: TSelected, b: TSelected) => boolean = Object.is,
 ): () => void {
-  let previousValue = selector(store.getState())
+  let previousValue = selector(store.getState());
 
   return store.subscribe((state) => {
-    const currentValue = selector(state)
+    const currentValue = selector(state);
     if (!equalityFn(currentValue, previousValue)) {
-      callback(currentValue, previousValue)
-      previousValue = currentValue
+      callback(currentValue, previousValue);
+      previousValue = currentValue;
     }
-  })
+  });
 }
 
 // ============================================================================
@@ -144,5 +145,5 @@ export function isZustandStore(value: unknown): value is UseBoundStore<StoreApi<
     typeof (value as UseBoundStore<StoreApi<unknown>>).getState === 'function' &&
     typeof (value as UseBoundStore<StoreApi<unknown>>).setState === 'function' &&
     typeof (value as UseBoundStore<StoreApi<unknown>>).subscribe === 'function'
-  )
+  );
 }

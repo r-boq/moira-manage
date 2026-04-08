@@ -8,6 +8,22 @@ const __dirname = dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const eslintConfig = [
+  // 忽略构建产物与依赖目录
+  {
+    ignores: [
+      '.next/**',
+      'out/**',
+      'dist/**',
+      'build/**',
+      'node_modules/**',
+      'public/**',
+      'next-env.d.ts',
+      '*.config.mjs',
+      '*.config.js',
+      'pnpm-lock.yaml',
+    ],
+  },
+
   // ----------------------------------------------------------------
   // 规则集：Airbnb → TS → Next.js → Prettier（必须最后，覆盖格式规则）
   // ----------------------------------------------------------------
@@ -40,6 +56,15 @@ const eslintConfig = [
       },
     },
     rules: {
+      // ---- 无障碍：告知 ESLint antd 的输入组件是合法的 control ----
+      'jsx-a11y/label-has-associated-control': [
+        'error',
+        {
+          controlComponents: ['Input', 'Input.Password', 'Select', 'DatePicker', 'TimePicker'],
+          depth: 3,
+        },
+      ],
+
       // ---- React ----
       // Next.js 不需要手动 import React
       'react/react-in-jsx-scope': 'off',

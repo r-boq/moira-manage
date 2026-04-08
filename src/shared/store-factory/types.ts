@@ -1,5 +1,5 @@
-import { Draft } from 'immer'
-import { StoreApi } from 'zustand'
+import { type Draft } from 'immer';
+import { type StoreApi } from 'zustand';
 
 // ============================================================================
 // Core Zustand Types
@@ -10,14 +10,14 @@ import { StoreApi } from 'zustand'
  * Allows both direct state updates and draft-based mutations
  */
 export type ZustandSet<T> = {
-  (partial: T | Partial<T> | ((state: T) => T | Partial<T> | void), replace?: boolean): void
-  (fn: (state: Draft<T>) => void): void
-}
+  (partial: T | Partial<T> | ((state: T) => T | Partial<T> | void), replace?: boolean): void;
+  (fn: (state: Draft<T>) => void): void;
+};
 
 /**
  * Zustand get function - returns current state
  */
-export type ZustandGet<T> = () => T
+export type ZustandGet<T> = () => T;
 
 // ============================================================================
 // Store Action Types
@@ -28,10 +28,10 @@ export type ZustandGet<T> = () => T
  */
 export type StoreActionWrapper<TState> = (
   set: ZustandSet<TState>,
-  get: ZustandGet<TState>
+  get: ZustandGet<TState>,
 ) => {
-  [key: string]: (...args: unknown[]) => unknown
-}
+  [key: string]: (...args: unknown[]) => unknown;
+};
 
 /**
  * Actions object for createImmerStore
@@ -40,13 +40,13 @@ export type StoreActionWrapper<TState> = (
 export type ImmerActions<TState> = {
   [key: string]: (
     this: {
-      set: ZustandSet<TState>
-      get: ZustandGet<TState>
+      set: ZustandSet<TState>;
+      get: ZustandGet<TState>;
     },
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ...args: any[]
-  ) => unknown
-}
+  ) => unknown;
+};
 
 // ============================================================================
 // Middleware Types
@@ -56,29 +56,21 @@ export type ImmerActions<TState> = {
  * Store middleware function
  */
 export type StoreMiddleware = <T>(
-  config: (
-    set: StoreApi<T>['setState'],
-    get: StoreApi<T>['getState'],
-    api: StoreApi<T>
-  ) => T
-) => (
-  set: StoreApi<T>['setState'],
-  get: StoreApi<T>['getState'],
-  api: StoreApi<T>
-) => T
+  config: (set: StoreApi<T>['setState'], get: StoreApi<T>['getState'], api: StoreApi<T>) => T,
+) => (set: StoreApi<T>['setState'], get: StoreApi<T>['getState'], api: StoreApi<T>) => T;
 
 /**
  * DevTools middleware options
  */
 export interface DevtoolsOptions {
   /** Store name in DevTools */
-  name?: string
+  name?: string;
   /** Enable DevTools (default: true in development) */
-  enabled?: boolean
+  enabled?: boolean;
   /** Anonymize actions */
-  anonymousActionType?: string
+  anonymousActionType?: string;
   /** Trace actions */
-  trace?: boolean
+  trace?: boolean;
 }
 
 /**
@@ -86,17 +78,17 @@ export interface DevtoolsOptions {
  */
 export interface PersistOptions<T> {
   /** localStorage key */
-  name: string
+  name: string;
   /** Partial state to persist (default: entire state) */
-  partialize?: (state: T) => Partial<T>
+  partialize?: (state: T) => Partial<T>;
   /** Version for migration */
-  version?: number
+  version?: number;
   /** Migration function */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  migrate?: (persistedState: any, version: number) => T
+  migrate?: (persistedState: any, version: number) => T;
   /** Merge strategy */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  merge?: (persistedState: any, currentState: T) => T
+  merge?: (persistedState: any, currentState: T) => T;
 }
 
 // ============================================================================
@@ -106,18 +98,15 @@ export interface PersistOptions<T> {
 /**
  * Configuration for createImmerStore
  */
-export interface ImmerStoreConfig<
-  TState extends object,
-  TActions extends ImmerActions<TState>,
-> {
+export interface ImmerStoreConfig<TState extends object, TActions extends ImmerActions<TState>> {
   /** Initial state */
-  state: TState
+  state: TState;
   /** Actions that can mutate draft state */
-  actions: TActions
+  actions: TActions;
   /** DevTools options */
-  devtools?: DevtoolsOptions | boolean
+  devtools?: DevtoolsOptions | boolean;
   /** Persist options */
-  persist?: PersistOptions<TState>
+  persist?: PersistOptions<TState>;
 }
 
 /**
@@ -125,9 +114,9 @@ export interface ImmerStoreConfig<
  */
 export interface ControllerStoreConfig<TState extends object> {
   /** DevTools options */
-  devtools?: DevtoolsOptions | boolean
+  devtools?: DevtoolsOptions | boolean;
   /** Persist options */
-  persist?: PersistOptions<TState>
+  persist?: PersistOptions<TState>;
 }
 
 // ============================================================================
@@ -138,15 +127,12 @@ export interface ControllerStoreConfig<TState extends object> {
  * Extract action types from ImmerActions
  */
 export type ExtractActions<TActions extends ImmerActions<unknown>> = {
-  [K in keyof TActions]: TActions[K] extends (
-    this: unknown,
-    ...args: infer P
-  ) => infer R
+  [K in keyof TActions]: TActions[K] extends (this: unknown, ...args: infer P) => infer R
     ? (...args: P) => R
-    : never
-}
+    : never;
+};
 
 /**
  * Complete store type combining state and actions
  */
-export type StoreType<TState, TActions> = TState & TActions
+export type StoreType<TState, TActions> = TState & TActions;

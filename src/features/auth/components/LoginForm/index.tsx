@@ -1,25 +1,30 @@
-'use client'
+'use client';
 
-import { FormEvent, useState } from 'react'
-import { Button, Input } from '@components/ui'
-import { useLogin } from '../../hooks/useLogin'
-import styles from './index.module.scss'
+import { type FormEvent, useState } from 'react';
+
+import { Button, Input } from '@components/ui';
+
+import styles from './index.module.scss';
+import { useLogin } from '../../hooks/useLogin';
 
 export function LoginForm() {
-  const { login, loading, error } = useLogin()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
+  const { login, loading, error } = useLogin();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    await login({ username, password })
+    e.preventDefault();
+    await login({ username, password });
   }
 
   return (
     <form onSubmit={handleSubmit} className={styles.form}>
       <div className={styles.field}>
-        <label className={styles.label}>用户名</label>
+        <label htmlFor="login-username" className={styles.label}>
+          用户名
+        </label>
         <Input
+          id="login-username"
           placeholder="请输入用户名"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -30,8 +35,11 @@ export function LoginForm() {
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>密码</label>
+        <label htmlFor="login-password" className={styles.label}>
+          密码
+        </label>
         <Input.Password
+          id="login-password"
           placeholder="请输入密码"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -54,5 +62,5 @@ export function LoginForm() {
         登录
       </Button>
     </form>
-  )
+  );
 }

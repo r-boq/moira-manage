@@ -1,15 +1,16 @@
-import Link from 'next/link'
-import styles from './index.module.scss'
+import Link from 'next/link';
+
+import styles from './index.module.scss';
 
 export interface NavItem {
-  label: string
-  href: string
+  label: string;
+  href: string;
 }
 
 const navItems: NavItem[] = [
   { label: '首页', href: '/' },
   { label: '仪表盘', href: '/dashboard' },
-]
+];
 
 export function Header() {
   return (
@@ -27,5 +28,5 @@ export function Header() {
         </nav>
       </div>
     </header>
-  )
+  );
 }

@@ -1,8 +1,12 @@
-// @ts-nocheck - Zustand overloads are complex; types are enforced at the call-site
-import { create } from 'zustand'
-import { produce } from 'immer'
-import type { StoreApi } from 'zustand/vanilla'
-import type { UseBoundStore } from 'zustand/react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Zustand generic overloads are intentionally loose here; types are enforced at call-site
+import { produce } from 'immer';
+import { create } from 'zustand';
+import type { UseBoundStore } from 'zustand/react';
+import type { StoreApi } from 'zustand/vanilla';
+
+import { createActions } from './helpers';
+import { devtools, persist, immer } from './middleware';
 import type {
   ZustandGet,
   ZustandSet,
@@ -13,9 +17,7 @@ import type {
   ControllerStoreConfig,
   DevtoolsOptions,
   PersistOptions,
-} from './types'
-import { devtools, persist, immer } from './middleware'
-import { createActions } from './helpers'
+} from './types';
 
 // ============================================================================
 // Internal: apply middleware stack
@@ -24,23 +26,23 @@ import { createActions } from './helpers'
 function applyMiddleware<T extends object>(
   creator: unknown,
   options?: {
-    devtools?: DevtoolsOptions | boolean
-    persist?: PersistOptions<T>
-  }
+    devtools?: DevtoolsOptions | boolean;
+    persist?: PersistOptions<T>;
+  },
 ) {
-  let result = creator
+  let result = creator;
 
   if (options?.persist) {
-    result = persist(result, options.persist)
+    result = persist(result, options.persist);
   }
 
   if (options?.devtools !== undefined && options.devtools !== false) {
     const devtoolsOpts =
-      typeof options.devtools === 'object' ? options.devtools : { enabled: true }
-    result = devtools(result, devtoolsOpts)
+      typeof options.devtools === 'object' ? options.devtools : { enabled: true };
+    result = devtools(result, devtoolsOpts);
   }
 
-  return result
+  return result;
 }
 
 // ============================================================================
@@ -48,17 +50,17 @@ function applyMiddleware<T extends object>(
 // ============================================================================
 
 export function extractMethods<T extends object>(
-  instance: T
-): Partial<Record<keyof T, Function>> {
-  const proto = Object.getPrototypeOf(instance)
+  instance: T,
+): Partial<Record<keyof T, (...args: unknown[]) => unknown>> {
+  const proto = Object.getPrototypeOf(instance) as T;
   return Object.fromEntries(
     Object.getOwnPropertyNames(proto)
-      .filter(
-        (key) =>
-          key !== 'constructor' && typeof instance[key as keyof T] === 'function'
-      )
-      .map((key) => [key, (instance[key as keyof T] as Function).bind(instance)])
-  ) as Partial<Record<keyof T, Function>>
+      .filter((key) => key !== 'constructor' && typeof instance[key as keyof T] === 'function')
+      .map((key) => [
+        key,
+        (instance[key as keyof T] as (...args: unknown[]) => unknown).bind(instance),
+      ]),
+  ) as Partial<Record<keyof T, (...args: unknown[]) => unknown>>;
 }
 
 // ============================================================================
@@ -80,38 +82,35 @@ export function extractMethods<T extends object>(
  * })
  * ```
  */
-export function createImmerStore<
-  TState extends object,
-  TActions extends ImmerActions<TState>,
->(
-  config: ImmerStoreConfig<TState, TActions>
+export function createImmerStore<TState extends object, TActions extends ImmerActions<TState>>(
+  config: ImmerStoreConfig<TState, TActions>,
 ): UseBoundStore<StoreApi<TState & ExtractActions<TActions>>> {
   const {
     state: initialState,
     actions: actionDefs,
     devtools: devtoolsOpts,
     persist: persistOpts,
-  } = config
+  } = config;
 
   return create<TState & ExtractActions<TActions>>()(
     applyMiddleware(
       immer((set, get) => {
         const immerSet: ZustandSet<TState> = (updater: unknown, replace?: boolean) => {
           if (typeof updater === 'function') {
-            set((state) => produce(state, updater as (d: TState) => void) as unknown, replace)
+            set((state) => produce(state, updater as (d: TState) => void) as unknown, replace);
           } else {
-            set(updater, replace)
+            set(updater, replace);
           }
-        }
+        };
 
-        const immerGet = get as ZustandGet<TState>
-        const boundActions = createActions(actionDefs, immerSet, immerGet)
+        const immerGet = get as ZustandGet<TState>;
+        const boundActions = createActions(actionDefs, immerSet, immerGet);
 
-        return { ...initialState, ...boundActions } as TState & ExtractActions<TActions>
+        return { ...initialState, ...boundActions } as TState & ExtractActions<TActions>;
       }),
-      { devtools: devtoolsOpts, persist: persistOpts }
-    )
-  )
+      { devtools: devtoolsOpts, persist: persistOpts },
+    ),
+  );
 }
 
 // ============================================================================
@@ -135,58 +134,50 @@ export function createImmerStore<
  * })
  * ```
  */
-export function createControllerStore<
-  TState extends object,
-  TService,
-  TController extends object,
->(
+export function createControllerStore<TState extends object, TService, TController extends object>(
   StateClass: new (...args: unknown[]) => TState,
   ControllerClass: new (
     set: ZustandSet<TState>,
     get: ZustandGet<TState>,
-    service?: TService
+    service?: TService,
   ) => TController,
   serviceOrConfig?: TService | ControllerStoreConfig<TState>,
-  initValue?: unknown[]
+  initValue?: unknown[],
 ): UseBoundStore<StoreApi<TState & TController>> {
-  let service: TService | undefined
-  let config: ControllerStoreConfig<TState> | undefined
+  let service: TService | undefined;
+  let config: ControllerStoreConfig<TState> | undefined;
 
   if (
     serviceOrConfig &&
     typeof serviceOrConfig === 'object' &&
     ('devtools' in serviceOrConfig || 'persist' in serviceOrConfig)
   ) {
-    config = serviceOrConfig as ControllerStoreConfig<TState>
+    config = serviceOrConfig as ControllerStoreConfig<TState>;
   } else {
-    service = serviceOrConfig as TService
+    service = serviceOrConfig as TService;
   }
 
   return create<TState & TController>()(
     applyMiddleware(
       immer((set, get) => {
-        const state = new StateClass(...(initValue ?? []))
+        const state = new StateClass(...(initValue ?? []));
 
         const immerSet: ZustandSet<TState> = (updater: unknown, replace?: boolean) => {
           if (typeof updater === 'function') {
-            set((s) => produce(s, updater as (d: TState) => void) as unknown, replace)
+            set((s) => produce(s, updater as (d: TState) => void) as unknown, replace);
           } else {
-            set(updater, replace)
+            set(updater, replace);
           }
-        }
+        };
 
-        const controller = new ControllerClass(
-          immerSet,
-          get as ZustandGet<TState>,
-          service
-        )
-        const controllerMethods = extractMethods(controller)
+        const controller = new ControllerClass(immerSet, get as ZustandGet<TState>, service);
+        const controllerMethods = extractMethods(controller);
 
-        return { ...state, ...controllerMethods } as TState & TController
+        return { ...state, ...controllerMethods } as TState & TController;
       }),
-      config
-    )
-  )
+      config,
+    ),
+  );
 }
 
 // ============================================================================
@@ -211,25 +202,25 @@ export function createSimpleStore<TState extends object>(
   state: TState,
   actionWrappers: StoreActionWrapper<TState>,
   options?: {
-    devtools?: DevtoolsOptions | boolean
-    persist?: PersistOptions<TState>
-  }
+    devtools?: DevtoolsOptions | boolean;
+    persist?: PersistOptions<TState>;
+  },
 ): UseBoundStore<StoreApi<TState & ReturnType<StoreActionWrapper<TState>>>> {
   return create<TState & ReturnType<StoreActionWrapper<TState>>>()(
     applyMiddleware(
       immer((set, get) => {
         const immerSet: ZustandSet<TState> = (updater: unknown, replace?: boolean) => {
           if (typeof updater === 'function') {
-            set((s) => produce(s, updater as (d: TState) => void) as unknown, replace)
+            set((s) => produce(s, updater as (d: TState) => void) as unknown, replace);
           } else {
-            set(updater, replace)
+            set(updater, replace);
           }
-        }
+        };
 
-        const actions = actionWrappers(immerSet, get as ZustandGet<TState>)
-        return { ...state, ...actions }
+        const actions = actionWrappers(immerSet, get as ZustandGet<TState>);
+        return { ...state, ...actions };
       }),
-      options
-    )
-  )
+      options,
+    ),
+  );
 }
