@@ -1,0 +1,52 @@
+// 变量和混入已由 next.config.ts additionalData 自动注入，无需手动 @use
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: $header-height;
+  background-color: $color-bg-container;
+  border-bottom: 1px solid $color-border-light;
+  box-shadow: $shadow-sm;
+}
+
+.inner {
+  @include flex-between;
+  height: 100%;
+  max-width: $layout-max-width;
+  margin: 0 auto;
+  padding: 0 $spacing-lg;
+}
+
+.logo {
+  font-size: $font-size-md;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+  text-decoration: none;
+  transition: $transition-fast;
+
+  &:hover {
+    color: $color-primary;
+  }
+}
+
+.nav {
+  @include flex-y-center;
+  gap: $spacing-lg;
+}
+
+.navLink {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  text-decoration: none;
+  transition: $transition-fast;
+
+  &:hover {
+    color: $color-text-primary;
+  }
+
+  &.active {
+    color: $color-primary;
+  }
+}

@@ -1,0 +1,57 @@
+// globals.scss
+// 全局样式入口 — 仅包含真正需要全局生效的样式
+// 变量和混入已通过 next.config.ts sassOptions.additionalData 自动注入所有 .scss 文件，无需手动 @use
+
+// ============================================================
+// CSS 自定义属性（与 antd 主题令牌对齐）
+// ============================================================
+:root {
+  --color-primary:      #{$color-primary};
+  --color-bg-layout:    #{$color-bg-layout};
+  --header-height:      #{$header-height};
+  --sidebar-width:      #{$sidebar-width};
+  --content-padding:    #{$content-padding};
+}
+
+// ============================================================
+// 基础重置（antd 5.x 已内置 CSS Reset，此处仅做补充）
+// ============================================================
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: $font-size-base;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $color-text-primary;
+  background-color: $color-bg-layout;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// ============================================================
+// 滚动条全局风格
+// ============================================================
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: $color-border;
+  border-radius: $radius-full;
+  &:hover {
+    background: darken($color-border, 15%);
+  }
+}
